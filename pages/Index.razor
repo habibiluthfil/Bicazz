@@ -1,0 +1,62 @@
+@page "/"
+@namespace Bicazz.Pages
+@inject NavigationManager NavigationManager
+
+@* Halaman utama aplikasi.
+   Fungsi: Menjelaskan tujuan Bicazz, menampilkan keuntungan, dan mengarahkan pengguna
+   ke halaman fitur utama melalui cards interaktif. *@
+<div class="home-view">
+    <div class="hero">
+        <h1>Bicazz</h1>
+        <p>
+            Bicazz adalah aplikasi yang berkaitan dengan keuangan. Aplikasi ini membantu pengguna mengelola arus kas dengan fitur pencatatan,
+            target tabungan, dan split bill.
+        </p>
+    </div>
+
+    <div class="grid-two">
+        <Card>
+            <div class="card-header">
+                <div class="icon">🎯</div>
+                <h2>Kenapa aplikasi ini dibuat?</h2>
+            </div>
+            <p class="opacity-80">Banyak pelajar:</p>
+            <ul>
+                <li>Tidak mencatat keuangan</li>
+                <li>Sulit menabung</li>
+                <li>Bingung saat split bill</li>
+            </ul>
+        </Card>
+
+        <Card>
+            <div class="card-header">
+                <div class="icon">📊</div>
+                <h2>Kelebihan Aplikasi</h2>
+            </div>
+            <ul>
+                <li>Mudah digunakan</li>
+                <li>Semua fitur dalam satu aplikasi</li>
+                <li>Visualisasi data (grafik)</li>
+            </ul>
+        </Card>
+    </div>
+
+    <div class="section-title">Fitur Utama</div>
+    <div class="feature-grid">
+        <div class="feature-card" @onclick="() => NavigationManager.NavigateTo('/product')">
+            <div class="icon">💼</div>
+            <h3>Pencatatan Kas</h3>
+            <p>Lacak pengeluaran & pemasukan harian dengan grafik visual interaktif.</p>
+        </div>
+        <div class="feature-card" @onclick="() => NavigationManager.NavigateTo('/product')">
+            <div class="icon">🎯</div>
+            <h3>Target Tabungan</h3>
+            <p>Atur goals impianmu dan pantau progress tabungan tanpa ganggu kebutuhan harian.</p>
+        </div>
+        <div class="feature-card" @onclick="() => NavigationManager.NavigateTo('/product')">
+            <div class="icon">🧾</div>
+            <h3>Split Bill</h3>
+            <p>Hitung otomatis patungan makan bareng teman tanpa pusing.</p>
+        </div>
+    </div>
+</div>

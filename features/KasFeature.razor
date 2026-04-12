@@ -1,0 +1,133 @@
+@namespace Bicazz.Features
+@using Bicazz.Data
+
+@* KasFeature menampilkan UI dan tata letak untuk fitur pencatatan kas.
+   Fungsi: Menyajikan form input transaksi, rangkuman statistik, dan daftar riwayat transaksi. *@
+
+<Card class="grid-card">
+    <h3>Input Data</h3>
+    <div class="flex-row" style="gap: 0.5rem; margin-bottom: 1rem;">
+        <button class="nav-button @(type == "income" ? "active" : "")" @onclick="() => SelectType('income')">Pemasukan</button>
+        <button class="nav-button @(type == "expense" ? "active" : "")" @onclick="() => SelectType('expense')">Pengeluaran</button>
+    </div>
+
+    <form class="space-y-4">
+        <div>
+            <label>Nominal (Rp)</label>
+            <input type="number" @bind="amount" placeholder="Contoh: 50000" required />
+        </div>
+        <div>
+            <label>Kategori</label>
+            <select @bind="category">
+                @foreach (var cat in Categories)
+                {
+                    <option value="@cat">@cat</option>
+                }
+            </select>
+        </div>
+        @if (category == "Lainnya")
+        {
+            <div>
+                <label>Nama Kategori Kustom</label>
+                <input type="text" @bind="customCategory" placeholder="Masukkan kategori" required />
+            </div>
+        }
+        <div>
+            <label>Keterangan / Nama (Opsional)</label>
+            <input type="text" @bind="note" placeholder="Contoh: Beli Makan Siang" />
+        </div>
+        <button type="button" class="btn-primary" style="width:100%; margin-top: 1rem;" @onclick="HandleAddTransaction">Catat @(type == "income" ? "Pemasukan" : "Pengeluaran")</button>
+    </form>
+</Card>
+
+<div style="margin-top: 1.5rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1rem;">
+    <Card class="stats-card" style="background: linear-gradient(135deg, #22c55e, #10b981); color:#fff; border:none;">
+        <p>Pemasukan</p>
+        <h4>Rp @TotalIncome.ToString("N0")</h4>
+    </Card>
+    <Card class="stats-card" style="background: linear-gradient(135deg, #ef4444, #f97316); color:#fff; border:none;">
+        <p>Pengeluaran</p>
+        <h4>Rp @TotalExpense.ToString("N0")</h4>
+    </Card>
+    <Card class="stats-card" style="background: linear-gradient(135deg, #6366f1, #2563eb); color:#fff; border:none;">
+        <p>Saldo</p>
+        <h4>Rp @balance.ToString("N0")</h4>
+    </Card>
+</div>
+
+<Card class="table-card" style="margin-top: 1.5rem;">
+    <div class="table-header">
+        <h3>Riwayat Transaksi</h3>
+    </div>
+    @if (!transactions.Any())
+    {
+        <div style="text-align:center; opacity:0.7; padding:2rem;">
+            <p>Belum ada transaksi dicatat.</p>
+        </div>
+    }
+    @foreach (var tx in transactions)
+    {
+        <div class="transaction-row">
+            <div class="meta">
+                <div class="badge" style="background:@(tx.Type == "income" ? "#d1fae5" : "#fecaca"); color:@(tx.Type == "income" ? "#047857" : "#b91c1c");">
+                    @(tx.Type == "income" ? "⬆️" : "⬇️")
+                </div>
+                <div>
+                    <p><strong>@tx.Category</strong> @if (!string.IsNullOrWhiteSpace(tx.Note)) { <span style="opacity:0.7;">(@tx.Note)</span> }</p>
+                    <p style="font-size:0.8rem; opacity:0.75;">@tx.Date</p>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <p class="amount" style="color:@(tx.Type == "income" ? "#047857" : "#b91c1c");">@(tx.Type == "income" ? "+" : "-") Rp @tx.Amount.ToString("N0")</p>
+                <button class="btn-tertiary" type="button" style="background:#ef4444; padding:0.8rem; font-size:0.9rem;" @onclick="() => DeleteTransaction(tx.Id)">Hapus</button>
+            </div>
+        </div>
+    }
+</Card>
+
+@code {
+    private string type = "expense";
+    private string amount = string.Empty;
+    private string category = "Kebutuhan";
+    private string customCategory = string.Empty;
+    private string note = string.Empty;
+    private readonly List<Transaction> transactions = new();
+
+    private string[] incomeCategories = new[] { "Gaji", "Uang Jajan", "Bonus", "Lainnya" };
+    private string[] expenseCategories = new[] { "Kebutuhan", "Keinginan", "Tabungan", "Lainnya" };
+
+    private IEnumerable<string> Categories => type == "income" ? incomeCategories : expenseCategories;
+
+    private decimal TotalIncome => transactions.Where(t => t.Type == "income").Sum(t => t.Amount);
+    private decimal TotalExpense => transactions.Where(t => t.Type == "expense").Sum(t => t.Amount);
+    private decimal balance => TotalIncome - TotalExpense;
+
+    private void SelectType(string selected)
+    {
+        type = selected;
+        category = selected == "income" ? "Uang Jajan" : "Kebutuhan";
+    }
+
+    private void HandleAddTransaction()
+    {
+        if (!decimal.TryParse(amount, out var value) || value <= 0)
+        {
+            return;
+        }
+
+        var newTx = new Transaction(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), type, value, category == "Lainnya" ? (customCategory.Trim().Length > 0 ? customCategory : "Lainnya") : category, note, DateTime.Now.ToString("d"));
+        transactions.Insert(0, newTx);
+        amount = string.Empty;
+        note = string.Empty;
+        customCategory = string.Empty;
+    }
+
+    private void DeleteTransaction(long id)
+    {
+        var tx = transactions.FirstOrDefault(t => t.Id == id);
+        if (tx is not null)
+        {
+            transactions.Remove(tx);
+        }
+    }
+}

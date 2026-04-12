@@ -1,0 +1,26 @@
+@page "/product"
+@namespace Bicazz.Pages
+
+@* Halaman produk aplikasi.
+   Fungsi: Menyajikan navigasi tab untuk memilih fitur Pencatatan Kas, Target Tabungan,
+   atau Split Bill. Konten fitur diketahui berdasarkan tab yang aktif. *@
+<div class="product-page">
+    <div class="nav-links" style="margin-bottom: 1.5rem;">
+        <button class="nav-button @(activeTab == "kas" ? "active" : "")" @onclick="() => SetTab(\"kas\")">Pencatatan Kas</button>
+        <button class="nav-button @(activeTab == "tabungan" ? "active" : "")" @onclick="() => SetTab(\"tabungan\")">Target Tabungan</button>
+        <button class="nav-button @(activeTab == "split" ? "active" : "")" @onclick="() => SetTab(\"split\")">Split Bill</button>
+    </div>
+
+    @if (activeTab == "kas")
+    {
+        <KasFeature />
+    }
+    else if (activeTab == "tabungan")
+    {
+        <TabunganFeature />
+    }
+    else
+    {
+        <SplitBillFeature />
+    }
+</div>
